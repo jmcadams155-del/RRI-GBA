@@ -1,19 +1,30 @@
+# -------- Project --------
 TARGET := racer
+SOURCES := main.c
 
-CC := arm-none-eabi-gcc
-OBJCOPY := arm-none-eabi-objcopy
+# -------- DevkitPro paths (Docker) --------
+DEVKITPRO := /opt/devkitpro
+DEVKITARM := $(DEVKITPRO)/devkitARM
+LIBGBA := $(DEVKITPRO)/libgba
 
-CFLAGS := -mthumb -O2 -Wall -mcpu=arm7tdmi
-LDFLAGS := -specs=gba.specs -lgba
+# -------- Tools --------
+CC := $(DEVKITARM)/bin/arm-none-eabi-gcc
+OBJCOPY := $(DEVKITARM)/bin/arm-none-eabi-objcopy
 
+# -------- Flags --------
+CFLAGS := -mthumb -mcpu=arm7tdmi -O2 -Wall \
+  -I$(LIBGBA)/include
+
+LDFLAGS := -specs=gba.specs -L$(LIBGBA)/lib -lgba
+
+# -------- Build --------
 all: $(TARGET).gba
 
-$(TARGET).elf:
-	$(CC) $(CFLAGS) main.c -o $@ $(LDFLAGS)
+$(TARGET).elf: $(SOURCES)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 $(TARGET).gba: $(TARGET).elf
 	$(OBJCOPY) -O binary $< $@
-	gbafix $@
 
 clean:
 	rm -f *.elf *.gba

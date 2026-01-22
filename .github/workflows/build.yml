@@ -1,0 +1,29 @@
+name: Build GBA ROM (Docker)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: Build using devkitARM Docker
+      run: |
+        docker pull devkitpro/devkitarm
+        docker run --rm \
+          -v ${{ github.workspace }}:/src \
+          -w /src \
+          devkitpro/devkitarm \
+          make
+
+    - name: Upload ROM
+      uses: actions/upload-artifact@v4
+      with:
+        name: gba-rom
+        path: "*.gba"

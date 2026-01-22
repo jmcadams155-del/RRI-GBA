@@ -1,0 +1,31 @@
+name: Build GBA ROM (Docker, PATH fixed)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: Pull devkitARM image
+      run: docker pull devkitpro/devkitarm:latest
+
+    - name: Build inside devkitARM (ensure toolchain in PATH)
+      run: |
+        docker run --rm \
+         -v ${{ github.workspace }}:/src \
+         -w /src \
+         devkitpro/devkitarm:latest \
+         /bin/bash -lc "export PATH=/opt/devkitpro/devkitARM/bin:$PATH && make"
+
+    - name: Upload ROM
+      uses: actions/upload-artifact@v4
+      with:
+        name: gba-rom
+        path: "*.gba"
